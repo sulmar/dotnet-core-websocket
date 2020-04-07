@@ -1,4 +1,4 @@
-﻿# Websocket w .NET Core 3
+# Websocket w .NET Core 3 z użyciem Endpoints
 
 
 ## Wprowadzenie
