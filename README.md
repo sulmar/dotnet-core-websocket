@@ -1,4 +1,4 @@
-﻿# Websocket w .NET Core
+﻿# Websocket w .NET Core 3
 
 
 ## Wprowadzenie
