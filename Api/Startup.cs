@@ -54,11 +54,10 @@ namespace Api
             //    });
             //});
 
+            // Mapping WebSocket with using endpoint
+
             app.UseEndpoints(endpoints =>
             {
-
-                // Mapping WebSocket with using endpoint
-
                 //endpoints.Map("/ws", async (context) =>
                 //{
                 //    if (context.WebSockets.IsWebSocketRequest)
