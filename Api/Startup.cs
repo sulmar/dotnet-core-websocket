@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,62 +11,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Api
 {
-    public class MyDashboardMiddleware
-    {
-        private readonly RequestDelegate next;
 
-        public MyDashboardMiddleware(RequestDelegate next)
-        {
-            this.next = next;
-        }
-
-        public async Task InvokeAsync(HttpContext context)
-        {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-                await Echo(webSocket);
-
-                return;
-            }
-            await next(context);
-        }
-
-        private async Task Echo(WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-        }
-    }
-
-    public static class MyEndpointRouteBuilderExtensions
-    {
-        public static IEndpointConventionBuilder MapWebSocket(
-                 this IEndpointRouteBuilder endpoints,
-                 string pattern,
-                 Func<WebSocket, Task> execute = null)
-        {
-
-            return endpoints.Map(pattern, async (context) =>
-            {
-                if (context.WebSockets.IsWebSocketRequest)
-                {
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-                    await execute?.Invoke(webSocket);
-                }
-            });
-        }
-    }
 
     public class Startup
     {
@@ -93,6 +36,10 @@ namespace Api
 
             app.UseRouting();
 
+
+
+            // Mapping WebSocket with using IApplicationBuilder
+
             //app.Map("/ws", builder =>
             //{
             //    builder.Use(async (context, next) =>
@@ -109,6 +56,9 @@ namespace Api
 
             app.UseEndpoints(endpoints =>
             {
+
+                // Mapping WebSocket with using endpoint
+
                 //endpoints.Map("/ws", async (context) =>
                 //{
                 //    if (context.WebSockets.IsWebSocketRequest)
@@ -119,6 +69,7 @@ namespace Api
                 //    }
                 //});
 
+                // Mapping WebSocket with using your own extension method
                 endpoints.MapWebSocket("/ws", async websocket => await Echo(websocket));
 
                 endpoints.Map("/", async context => await context.Response.WriteAsync("Hello World!"));
@@ -126,7 +77,8 @@ namespace Api
             });
         }
 
-        private async Task Echo(HttpContext context, WebSocket webSocket)
+
+        private async Task Echo(WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
 
@@ -139,21 +91,26 @@ namespace Api
             }
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
+    }
 
-        private async Task Echo(WebSocket webSocket)
+
+    public static class WebSocketEndpointRouteBuilderExtensions
+    {
+        public static IEndpointConventionBuilder MapWebSocket(
+                 this IEndpointRouteBuilder endpoints,
+                 string pattern,
+                 Func<WebSocket, Task> execute = null)
         {
-            var buffer = new byte[1024 * 4];
 
-            // var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
+            return endpoints.Map(pattern, async (context) =>
             {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                if (context.WebSockets.IsWebSocketRequest)
+                {
+                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    await execute?.Invoke(webSocket);
+                }
+            });
         }
     }
 }
