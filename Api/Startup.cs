@@ -33,7 +33,7 @@ namespace Api
 
             app.UseWebSockets();
 
-            // app.UseRouting();
+            app.UseRouting();
 
             app.Map("/ws", builder =>
             {
