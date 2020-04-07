@@ -71,7 +71,7 @@ namespace Api
                 // Mapping WebSocket with using your own extension method
                 endpoints.MapWebSocket("/ws", async websocket => await Echo(websocket));
 
-                endpoints.Map("/", async context => await context.Response.WriteAsync("Hello World!"));
+                endpoints.Map("/", async context => await context.Response.WriteAsync("Use websocket on /ws endpoint"));
 
             });
         }
